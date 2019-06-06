@@ -17,7 +17,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class Interfaz extends JFrame implements ActionListener {
 
-    JButton botonConectar, botonDesconectar, botonCrearB, botonBorrarB, botonCrearT, botonBorrarT, botonIngresarD, botonConsultar;
+    JButton botonConectar, botonDesconectar, botonCrearB, botonBorrarB, botonCrearT, botonBorrarT, botonIngresarD, botonConsultar,botonborrar;
     JTabbedPane pestañas = new JTabbedPane();
     JTable tabla = new JTable();
     JScrollPane sTabla=new JScrollPane(tabla);
@@ -195,6 +195,9 @@ public class Interfaz extends JFrame implements ActionListener {
         botonConsultar = new JButton("Consultar");
         botonConsultar.setBounds(450, 195, 100, 25);
         botonConsultar.addActionListener(this);
+        botonborrar = new JButton("Borrar dato");
+        botonborrar.setBounds(300, 195, 120, 25);
+        botonborrar.addActionListener(this);
         JLabel mensajeingresoD = new JLabel("Ingrese la base de datos a consultar");
         mensajeingresoD.setBounds(30, 30, 250, 50);
         basedatos = new JTextField();
@@ -222,14 +225,37 @@ public class Interfaz extends JFrame implements ActionListener {
         panelConsultar.add(ingreseDatoMens);
         panelConsultar.add(datoConsultar);
         panelConsultar.add(sTabla);
+        panelConsultar.add(botonborrar);
         pestañas.add("CONSULTAR", panelConsultar);
     }
     
     public void mostrar_tabla(String bas,String tabla1) {
 
         ArrayList<String[]> lista = new ArrayList();
-        BaseDeDatos BDD = new BaseDeDatos();
         lista = BDD.listar(bas,tabla1);
+
+        DefaultTableModel model = (DefaultTableModel) tabla.getModel();
+        int rows = model.getDataVector().size();
+        for (int i = 0; i < rows; i++) {
+            model.removeRow(0);
+        }
+        String[] filas = new String[6];
+        for (int i = 0; i < lista.size(); i++) {
+            filas[0] = lista.get(i)[0];
+            filas[1] = lista.get(i)[1];
+            filas[2] = lista.get(i)[2];
+            filas[3] = lista.get(i)[3];
+            filas[4] = lista.get(i)[4];
+            filas[5] = lista.get(i)[5];
+            model.addRow(filas);
+        }
+        tabla.setModel(model);
+    }
+    
+        public void mostrar_uno(String bas,String tabla1,String codigo) {
+
+        ArrayList<String[]> lista = new ArrayList();
+        lista = BDD.solouno(bas,tabla1,codigo);
 
         DefaultTableModel model = (DefaultTableModel) tabla.getModel();
         int rows = model.getDataVector().size();
@@ -319,10 +345,23 @@ public class Interfaz extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(null, "No esta conectado a un servidor");
             }
         }
+        String vacio="";
         //acciones para el boton consultar
         if(e.getSource().equals(botonConsultar)){
             if(estado){
-                mostrar_tabla(basedatos.getText(), nombreTBconsult.getText());
+                if(datoConsultar.getText().equals(vacio)) {
+                    mostrar_tabla(basedatos.getText(), nombreTBconsult.getText());
+                } else {
+                    mostrar_uno(basedatos.getText(), nombreTBconsult.getText(), datoConsultar.getText());
+                } 
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "No esta conectado a un servidor");
+            }
+        }
+        if(e.getSource().equals(botonborrar)){
+            if(estado){
+                BDD.BorrarDatos(basedatos.getText(), nombreTBconsult.getText(), datoConsultar.getText());
             }
             else{
                 JOptionPane.showMessageDialog(null, "No esta conectado a un servidor");
